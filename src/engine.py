@@ -78,12 +78,14 @@ def _process_page(conn, site_id, site_module, term, page_data):
             price_type, new_price = _customer_price(prices)
             reference_price = _reference_price(prices, price_type)
             if price_type and new_price is not None and reference_price:
-                db.insert_alert(conn, site_id, product["sku_id"], price_type, new_price, reference_price, badge_reason)
-                send_alert(
-                    _format_alert(site_id, badge_reason, product, price_type, new_price, reference_price),
-                    photo_url=product.get("media_url"),
-                )
-                alerts_in_page += 1
+                last_alerted = db.get_last_alert_price(conn, site_id, product["sku_id"], price_type)
+                if last_alerted != new_price:
+                    db.insert_alert(conn, site_id, product["sku_id"], price_type, new_price, reference_price, badge_reason)
+                    send_alert(
+                        _format_alert(site_id, badge_reason, product, price_type, new_price, reference_price),
+                        photo_url=product.get("media_url"),
+                    )
+                    alerts_in_page += 1
 
         # --- Detección histórica por tipo de precio ---
         for price_type, price in prices.items():
@@ -91,12 +93,14 @@ def _process_page(conn, site_id, site_module, term, page_data):
             anomaly = detect_anomaly(price, history)
             if anomaly:
                 reason, reference = anomaly
-                db.insert_alert(conn, site_id, product["sku_id"], price_type, price, reference, reason)
-                send_alert(
-                    _format_alert(site_id, reason, product, price_type, price, reference),
-                    photo_url=product.get("media_url"),
-                )
-                alerts_in_page += 1
+                last_alerted = db.get_last_alert_price(conn, site_id, product["sku_id"], price_type)
+                if last_alerted != price:
+                    db.insert_alert(conn, site_id, product["sku_id"], price_type, price, reference, reason)
+                    send_alert(
+                        _format_alert(site_id, reason, product, price_type, price, reference),
+                        photo_url=product.get("media_url"),
+                    )
+                    alerts_in_page += 1
 
             db.insert_observation(conn, site_id, product["sku_id"], price_type, price, term)
 
