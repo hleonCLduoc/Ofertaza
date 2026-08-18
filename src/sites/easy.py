@@ -1,15 +1,16 @@
 from . import _constructorio as cio
 
-SITE_ID = "jumbo"
+SITE_ID = "easy"
 
 CATEGORIES = [
-    "arroz",
-    "aceite",
-    "detergente",
-    "papel higienico",
+    "taladro",
+    "pintura interior",
+    "cama europea 1.5 plazas",
+    "cama europea 2 plazas",
+    "cama king size",
 ]
 
-KEY = "key_JopvNXKS61kwGkBe"
+KEY = "key_AimxrTjorsjiKQPy"
 PAGE_SIZE = 40
 
 session = cio.make_session()
@@ -24,4 +25,4 @@ def get_pagination(page_data):
 
 
 def iter_products(page_data):
-    yield from cio.iter_products(page_data, default_seller="Jumbo")
+    yield from cio.iter_products(page_data, default_seller="Easy")
