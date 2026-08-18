@@ -1,0 +1,11 @@
+services:
+  precio-monitor-falabella:
+    build: .
+    container_name: precio-monitor-falabella
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DB_PATH=/data/precios.db
+    volumes:
+      - ./data:/data
