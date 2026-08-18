@@ -1,4 +1,4 @@
-from . import falabella, marathon, paris, ripley, theline
+from . import falabella, marathon, paris, ripley, sodimac, theline
 
 # Registro de sitios disponibles. Cada módulo debe exponer:
 #   SITE_ID: str
@@ -12,4 +12,5 @@ SITES = {
     paris.SITE_ID: paris,
     theline.SITE_ID: theline,
     marathon.SITE_ID: marathon,
+    sodimac.SITE_ID: sodimac,
 }
