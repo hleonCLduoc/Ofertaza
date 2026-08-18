@@ -50,13 +50,63 @@ def _format_alert(site_id, reason, product, price_type, new_price, reference_pri
     )
 
 
+def _process_page(conn, site_id, site_module, term, page_data):
+    """Procesa una página ya descargada: guarda productos, detecta anomalías
+    y notifica. Devuelve (productos_procesados, alertas)."""
+    products_in_page = 0
+    alerts_in_page = 0
+
+    for product in site_module.iter_products(page_data):
+        db.upsert_product(
+            conn,
+            site_id,
+            product["sku_id"],
+            product["product_id"],
+            product["display_name"],
+            product["brand"],
+            product["seller_id"],
+            product["seller_name"],
+            product["url"],
+            product["media_url"],
+        )
+        products_in_page += 1
+        prices = product["prices"]
+
+        # --- Detección instantánea: descuento declarado por el propio sitio ---
+        badge_reason = detect_badge_discount(product.get("discount_percent"))
+        if badge_reason:
+            price_type, new_price = _customer_price(prices)
+            reference_price = _reference_price(prices, price_type)
+            if price_type and new_price is not None and reference_price:
+                db.insert_alert(conn, site_id, product["sku_id"], price_type, new_price, reference_price, badge_reason)
+                send_alert(
+                    _format_alert(site_id, badge_reason, product, price_type, new_price, reference_price),
+                    photo_url=product.get("media_url"),
+                )
+                alerts_in_page += 1
+
+        # --- Detección histórica por tipo de precio ---
+        for price_type, price in prices.items():
+            history = db.get_price_history(conn, site_id, product["sku_id"], price_type)
+            anomaly = detect_anomaly(price, history)
+            if anomaly:
+                reason, reference = anomaly
+                db.insert_alert(conn, site_id, product["sku_id"], price_type, price, reference, reason)
+                send_alert(
+                    _format_alert(site_id, reason, product, price_type, price, reference),
+                    photo_url=product.get("media_url"),
+                )
+                alerts_in_page += 1
+
+            db.insert_observation(conn, site_id, product["sku_id"], price_type, price, term)
+
+    return products_in_page, alerts_in_page
+
+
 def run_site_term(conn, site_id, site_module, term):
     first_page = site_module.fetch_page(term, 1)
     if first_page is None:
         return 0, 0
-
-    total_products = 0
-    total_alerts = 0
 
     count, per_page = site_module.get_pagination(first_page)
     total_pages = max(1, math.ceil(count / per_page))
@@ -69,57 +119,20 @@ def run_site_term(conn, site_id, site_module, term):
     else:
         logger.info("[%s] %r: %s productos en %s páginas", site_id, term, count, total_pages)
 
-    pages_data = [first_page]
+    total_products, total_alerts = _process_page(conn, site_id, site_module, term, first_page)
+
     for page in range(2, total_pages + 1):
         time.sleep(config.REQUEST_DELAY_SECONDS)
         page_data = site_module.fetch_page(term, page)
-        if page_data:
-            pages_data.append(page_data)
-
-    for page_data in pages_data:
-        for product in site_module.iter_products(page_data):
-            db.upsert_product(
-                conn,
-                site_id,
-                product["sku_id"],
-                product["product_id"],
-                product["display_name"],
-                product["brand"],
-                product["seller_id"],
-                product["seller_name"],
-                product["url"],
-                product["media_url"],
-            )
-            total_products += 1
-            prices = product["prices"]
-
-            # --- Detección instantánea: descuento declarado por el propio sitio ---
-            badge_reason = detect_badge_discount(product.get("discount_percent"))
-            if badge_reason:
-                price_type, new_price = _customer_price(prices)
-                reference_price = _reference_price(prices, price_type)
-                if price_type and new_price is not None and reference_price:
-                    db.insert_alert(conn, site_id, product["sku_id"], price_type, new_price, reference_price, badge_reason)
-                    send_alert(
-                        _format_alert(site_id, badge_reason, product, price_type, new_price, reference_price),
-                        photo_url=product.get("media_url"),
-                    )
-                    total_alerts += 1
-
-            # --- Detección histórica por tipo de precio ---
-            for price_type, price in prices.items():
-                history = db.get_price_history(conn, site_id, product["sku_id"], price_type)
-                anomaly = detect_anomaly(price, history)
-                if anomaly:
-                    reason, reference = anomaly
-                    db.insert_alert(conn, site_id, product["sku_id"], price_type, price, reference, reason)
-                    send_alert(
-                        _format_alert(site_id, reason, product, price_type, price, reference),
-                        photo_url=product.get("media_url"),
-                    )
-                    total_alerts += 1
-
-                db.insert_observation(conn, site_id, product["sku_id"], price_type, price, term)
+        if not page_data:
+            continue
+        products_in_page, alerts_in_page = _process_page(conn, site_id, site_module, term, page_data)
+        if products_in_page == 0:
+            # Página vacía: ya no hay más resultados (útil cuando el conteo
+            # total reportado por el sitio es aproximado o desconocido).
+            break
+        total_products += products_in_page
+        total_alerts += alerts_in_page
 
     return total_products, total_alerts
 
