@@ -60,7 +60,14 @@ def run_site_term(conn, site_id, site_module, term):
 
     count, per_page = site_module.get_pagination(first_page)
     total_pages = max(1, math.ceil(count / per_page))
-    logger.info("[%s] %r: %s productos en %s páginas", site_id, term, count, total_pages)
+    if total_pages > config.MAX_PAGES_PER_TERM:
+        logger.info(
+            "[%s] %r: %s productos (%s páginas), se limita a %s páginas",
+            site_id, term, count, total_pages, config.MAX_PAGES_PER_TERM,
+        )
+        total_pages = config.MAX_PAGES_PER_TERM
+    else:
+        logger.info("[%s] %r: %s productos en %s páginas", site_id, term, count, total_pages)
 
     pages_data = [first_page]
     for page in range(2, total_pages + 1):

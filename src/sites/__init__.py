@@ -1,4 +1,4 @@
-from . import falabella
+from . import falabella, ripley
 
 # Registro de sitios disponibles. Cada módulo debe exponer:
 #   SITE_ID: str
@@ -8,4 +8,5 @@ from . import falabella
 #   get_pagination(page_data) -> (count, per_page)
 SITES = {
     falabella.SITE_ID: falabella,
+    ripley.SITE_ID: ripley,
 }

@@ -12,6 +12,10 @@ DIGIT_ERROR_TOLERANCE = 0.05  # tolerancia para "falta un dígito" (precio = 1/1
 # Si el propio sitio declara un descuento igual o mayor a este %, se alerta al toque.
 BADGE_DISCOUNT_THRESHOLD = 80
 
+# Tope de páginas a recorrer por término de búsqueda, para que catálogos enormes
+# (ej. Ripley trae miles de resultados para "notebook") no disparen el tiempo de ciclo.
+MAX_PAGES_PER_TERM = int(os.environ.get("MAX_PAGES_PER_TERM", "40"))
+
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/120.0 Safari/537.36"
