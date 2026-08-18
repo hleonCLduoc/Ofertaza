@@ -10,4 +10,4 @@ COPY src/ ./src/
 ENV PYTHONUNBUFFERED=1
 WORKDIR /app/src
 
-CMD ["python", "scraper.py"]
+CMD ["python", "main.py"]

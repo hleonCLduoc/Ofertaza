@@ -1,30 +1,23 @@
 import os
 
-# Términos de búsqueda a monitorear (categoría "tecnología" para partir)
-SEARCH_TERMS = [
-    "notebook",
-    "celular",
-    "smartphone",
-    "computador",
-]
+# Qué sitios están activos en este ciclo (claves del registro en sites/__init__.py)
+ACTIVE_SITES = os.environ.get("ACTIVE_SITES", "falabella").split(",")
 
-# Cuántas observaciones históricas se guardan como referencia por SKU antes
-# de empezar a detectar anomalías (evita alertar con muy poco historial).
+# --- Detección basada en historial ---
 MIN_HISTORY_FOR_ALERT = 3
+DROP_THRESHOLD = 0.55  # caída vs. mediana histórica que se considera sospechosa
+DIGIT_ERROR_TOLERANCE = 0.05  # tolerancia para "falta un dígito" (precio = 1/10 o 1/100)
 
-# Caída porcentual vs. la mediana histórica que se considera sospechosa.
-DROP_THRESHOLD = 0.55  # 55%
+# --- Detección instantánea (sin historial) ---
+# Si el propio sitio declara un descuento igual o mayor a este %, se alerta al toque.
+BADGE_DISCOUNT_THRESHOLD = 80
 
-# Tolerancia para detectar "falta un dígito" (precio = 1/10 o 1/100 del histórico)
-DIGIT_ERROR_TOLERANCE = 0.05  # 5%
-
-BASE_URL = "https://www.falabella.com/falabella-cl/search"
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/120.0 Safari/537.36"
 )
 
-# Pausa entre requests para no golpear el sitio agresivamente (segundos)
+# Pausa entre requests a un mismo sitio, para no golpearlo agresivamente (segundos)
 REQUEST_DELAY_SECONDS = float(os.environ.get("REQUEST_DELAY_SECONDS", "2.5"))
 
 # Cada cuánto correr un ciclo completo de scraping (segundos). 1800 = 30 min.

@@ -1,11 +1,26 @@
 import statistics
 
-from config import DIGIT_ERROR_TOLERANCE, DROP_THRESHOLD, MIN_HISTORY_FOR_ALERT
+from config import (
+    BADGE_DISCOUNT_THRESHOLD,
+    DIGIT_ERROR_TOLERANCE,
+    DROP_THRESHOLD,
+    MIN_HISTORY_FOR_ALERT,
+)
+
+
+def detect_badge_discount(discount_percent):
+    """Descuento declarado por el propio sitio (sin necesitar historial).
+    discount_percent: entero positivo, ej. 21 para '-21%'."""
+    if discount_percent is None:
+        return None
+    if discount_percent >= BADGE_DISCOUNT_THRESHOLD:
+        return "descuento_declarado_80mas"
+    return None
 
 
 def detect_anomaly(new_price, history):
     """
-    history: precios anteriores del mismo sku_id + price_type, más reciente primero.
+    history: precios anteriores del mismo site+sku_id+price_type, más reciente primero.
     Devuelve (reason, reference_price) o None si no hay anomalía.
     """
     if len(history) < MIN_HISTORY_FOR_ALERT:
