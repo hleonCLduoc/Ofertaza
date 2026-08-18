@@ -13,6 +13,9 @@ CATEGORIES = [
     "celular",
     "smartphone",
     "computador",
+    "cama europea 1.5 plazas",
+    "cama europea 2 plazas",
+    "cama king size",
 ]
 
 BASE_URL = "https://www.paris.cl/search/"

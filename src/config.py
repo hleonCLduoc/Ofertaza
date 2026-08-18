@@ -10,7 +10,7 @@ DIGIT_ERROR_TOLERANCE = 0.05  # tolerancia para "falta un dígito" (precio = 1/1
 
 # --- Detección instantánea (sin historial) ---
 # Si el propio sitio declara un descuento igual o mayor a este %, se alerta al toque.
-BADGE_DISCOUNT_THRESHOLD = 80
+BADGE_DISCOUNT_THRESHOLD = 70
 
 # Tope de páginas a recorrer por término de búsqueda, para que catálogos enormes
 # (ej. Ripley trae miles de resultados para "notebook") no disparen el tiempo de ciclo.
