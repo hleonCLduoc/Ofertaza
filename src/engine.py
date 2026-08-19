@@ -143,6 +143,7 @@ def run_site_term(conn, site_id, site_module, term):
 
 def run_cycle():
     db.init_db()
+    logger.info("Sitios activos este ciclo (ACTIVE_SITES): %s", ", ".join(config.ACTIVE_SITES))
     with db.get_conn() as conn:
         grand_total_products = 0
         grand_total_alerts = 0
