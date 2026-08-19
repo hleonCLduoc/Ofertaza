@@ -44,6 +44,12 @@ def _slugify(text):
 def fetch_page(term, page):
     url = f"{BASE_URL}/{term}"
     resp = session.get(url, params={"sort": "relevance_desc", "page": page}, timeout=20)
+    if resp.status_code == 404:
+        # Ripley a veces reporta un total más alto de lo que en realidad
+        # pagina; a partir de cierta página deja de existir. Se trata como
+        # página vacía en vez de error, así el motor corta la paginación
+        # de este término en vez de abortarlo entero.
+        return {"products": [], "total": 0}
     resp.raise_for_status()
     match = NEXT_DATA_RE.search(resp.text)
     if not match:
