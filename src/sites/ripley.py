@@ -16,6 +16,12 @@ CATEGORIES = [
     "cama europea 1.5 plazas",
     "cama europea 2 plazas",
     "cama king size",
+    "tv",
+    "refrigerador",
+    "lavadora",
+    "microondas",
+    "aire acondicionado",
+    "audifonos",
 ]
 
 BASE_URL = "https://simple.ripley.cl/search"

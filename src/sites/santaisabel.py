@@ -7,6 +7,10 @@ CATEGORIES = [
     "aceite",
     "detergente",
     "papel higienico",
+    "bebidas",
+    "cecinas",
+    "lacteos",
+    "limpieza hogar",
 ]
 
 KEY = "key_c73M3GMIWJ8AcNnd"
