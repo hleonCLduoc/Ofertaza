@@ -8,6 +8,10 @@ CATEGORIES = [
     "cama europea 1.5 plazas",
     "cama europea 2 plazas",
     "cama king size",
+    "cama",
+    "frazadas",
+    "sabanas",
+    "tv",
 ]
 
 KEY = "key_AimxrTjorsjiKQPy"

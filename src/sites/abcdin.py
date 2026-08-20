@@ -15,6 +15,10 @@ CATEGORIES = [
     "cama europea 1.5 plazas",
     "cama europea 2 plazas",
     "cama king size",
+    "cama",
+    "frazadas",
+    "sabanas",
+    "tv",
 ]
 
 GRID_URL = "https://www.abc.cl/on/demandware.store/Sites-Abc-Site/es_CL/Search-UpdateGrid"

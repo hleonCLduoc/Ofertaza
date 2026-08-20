@@ -22,6 +22,9 @@ CATEGORIES = [
     "microondas",
     "aire acondicionado",
     "audifonos",
+    "cama",
+    "frazadas",
+    "sabanas",
 ]
 
 BASE_URL = "https://simple.ripley.cl/search"

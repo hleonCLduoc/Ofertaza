@@ -25,6 +25,22 @@ CATEGORY_PATHS = {
     "extensiones electricas": "CATG10801/Alargadores-y-Extensiones-Electricas",
     "cafeteras electricas": "cat3045/Cafeteras-electricas",
     "parrillas electricas": "cat3174/Parrillas-Electricas",
+    "colchones": "cat2020/Colchones",
+    "refrigeradores": "cat3205/Refrigeradores",
+    "lavadoras": "cat4060/Lavadoras",
+    "aire acondicionado": "cat2019/Aire-acondicionado",
+    "ventiladores": "cat3254/Ventiladores",
+    "calefont y termos": "cat2013/Calefont-y-Termos",
+    "estufas": "CATG10178/Estufas",
+    "closet": "cat3063/Closet",
+    "cerraduras digitales": "CATG11151/Cerraduras-Digitales",
+    "hidrolavadoras": "cat9560006/Hidrolavadoras",
+    "piscinas estructurales": "cat15180001/Piscinas-Estructurales",
+    "bombas de piscina": "CATG10511/Bombas-y-Equipos-de-Piscinas",
+    "sillas de escritorio": "cat9130008/Sillas-de-Escritorio",
+    "sillas gamer": "CATG19011/Sillas-gamer",
+    "sillas de comedor": "cat3229/Sillas-de-Comedor",
+    "parrilla a gas": "cat2450139/Parrilla-a-gas",
 }
 
 CATEGORIES = list(CATEGORY_PATHS.keys())
