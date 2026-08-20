@@ -42,11 +42,14 @@ def iter_products(page_data, default_seller):
             continue
 
         name = result.get("value", "")
-        if "granel" in name.lower():
-            # Productos vendidos a peso variable: el precio de referencia
-            # suele venir por kilo mientras el precio mostrado es de una
-            # porción menor (250 g, 100 g, etc.), lo que genera falsas
-            # alertas de "descuento" al comparar unidades distintas.
+        if data.get("MeasurementUnit") == "kg" or "granel" in name.lower():
+            # Productos vendidos a peso variable (fiambres, quesos, carnes,
+            # etc. — no solo lo que dice "granel" en el nombre): el precio
+            # de referencia viene por kilo completo mientras el precio
+            # mostrado es de una porción menor (100 g, 250 g...), lo que
+            # genera falsas alertas de "descuento" al comparar unidades
+            # distintas. MeasurementUnit == "kg" es la señal real; el
+            # nombre se deja como respaldo adicional.
             continue
 
         selling_price = data.get("sellingPrice") or data.get("price")
