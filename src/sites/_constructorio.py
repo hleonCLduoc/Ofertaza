@@ -41,6 +41,14 @@ def iter_products(page_data, default_seller):
         if not sku_id:
             continue
 
+        name = result.get("value", "")
+        if "granel" in name.lower():
+            # Productos vendidos a peso variable: el precio de referencia
+            # suele venir por kilo mientras el precio mostrado es de una
+            # porción menor (250 g, 100 g, etc.), lo que genera falsas
+            # alertas de "descuento" al comparar unidades distintas.
+            continue
+
         selling_price = data.get("sellingPrice") or data.get("price")
         list_price = data.get("listPrice") or data.get("originalPrice")
         if selling_price is None:
