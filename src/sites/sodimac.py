@@ -8,12 +8,28 @@ from config import USER_AGENT
 
 SITE_ID = "sodimac"
 
-CATEGORIES = [
-    "taladro",
-    "pintura interior",
-]
+# El buscador de texto libre de Sodimac es muy poco confiable (la mayoría
+# de los términos no resuelven a una categoría real). En su lugar, se usan
+# rutas de categoría reales sacadas directo de la navegación del sitio.
+CATEGORY_PATHS = {
+    "taladro": "cat14080023/Taladros",
+    "pintura interior": "CATG10841/Pintura-para-interior",
+    "sierras": "CATG10893/Serruchos-y-sierras",
+    "cemento": "CATG10923/Cemento",
+    "cortadora de pasto": "cat14080024/Cortadoras-de-pasto",
+    "parrillas": "CATG10505/Parrillas-Portatiles",
+    "zapatos de seguridad": "CATG10787/Zapatos-de-Seguridad",
+    "ampolletas": "CATG10093/Ampolletas-y-tubos",
+    "riego de jardin": "CATG10519/Riego-de-Jardin",
+    "herramientas electricas": "cat18320014/Herramientas-electricas-e-inalambricas",
+    "extensiones electricas": "CATG10801/Alargadores-y-Extensiones-Electricas",
+    "cafeteras electricas": "cat3045/Cafeteras-electricas",
+    "parrillas electricas": "cat3174/Parrillas-Electricas",
+}
 
-SEARCH_URL = "https://www.sodimac.cl/sodimac-cl/search"
+CATEGORIES = list(CATEGORY_PATHS.keys())
+
+BASE_URL = "https://www.sodimac.cl/sodimac-cl/lista"
 
 NEXT_DATA_RE = re.compile(r'id="__NEXT_DATA__"[^>]*>(.*?)</script>', re.DOTALL)
 
@@ -22,42 +38,25 @@ logger = logging.getLogger("sites.sodimac")
 session = requests.Session()
 session.headers.update({"User-Agent": USER_AGENT})
 
-# El buscador de Sodimac redirige el término (?Ntt=) a una URL de categoría
-# fija (ej. /sodimac-cl/lista/cat14080023/Taladros); la paginación (?page=N)
-# solo funciona sobre esa URL ya resuelta, no sobre el buscador original.
-_category_url_cache = {}
 
+def fetch_page(term, page):
+    path = CATEGORY_PATHS.get(term)
+    if not path:
+        logger.warning("Categoría desconocida para sodimac: %r", term)
+        return None
 
-def _parse_next_data(html):
-    match = NEXT_DATA_RE.search(html)
+    resp = session.get(f"{BASE_URL}/{path}", params={"page": page}, timeout=20)
+    resp.raise_for_status()
+    match = NEXT_DATA_RE.search(resp.text)
     if not match:
+        logger.warning("No se encontró __NEXT_DATA__ para %r página %s", term, page)
         return None
     try:
         data = json.loads(match.group(1))
     except json.JSONDecodeError:
+        logger.warning("__NEXT_DATA__ inválido para %r página %s", term, page)
         return None
     return data.get("props", {}).get("pageProps", {})
-
-
-def _resolve_category_url(term):
-    if term in _category_url_cache:
-        return _category_url_cache[term]
-
-    resp = session.get(SEARCH_URL, params={"Ntt": term}, timeout=20)
-    resp.raise_for_status()
-    url = resp.url.split("?")[0]
-    _category_url_cache[term] = url
-    return url
-
-
-def fetch_page(term, page):
-    base_url = _resolve_category_url(term)
-    resp = session.get(base_url, params={"page": page}, timeout=20)
-    resp.raise_for_status()
-    page_data = _parse_next_data(resp.text)
-    if page_data is None:
-        logger.warning("No se encontró __NEXT_DATA__ para %r página %s", term, page)
-    return page_data
 
 
 def get_pagination(page_data):

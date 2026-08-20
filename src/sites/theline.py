@@ -11,6 +11,7 @@ CATEGORIES = [
     "poleron",
     "chaqueta",
     "jockey",
+    "jordan",
 ]
 
 BASE_URL = "https://www.theline.cl/api/catalog_system/pub/products/search"

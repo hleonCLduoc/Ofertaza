@@ -1,6 +1,7 @@
 import logging
 import math
 import time
+from datetime import datetime
 
 import requests
 
@@ -34,20 +35,60 @@ def _reference_price(prices, exclude_type):
     return max(others) if others else None
 
 
-def _format_alert(site_id, reason, product, price_type, new_price, reference_price):
-    reference_txt = f"${reference_price:,.0f}".replace(",", ".")
-    new_txt = f"${new_price:,}".replace(",", ".")
+SITE_LABELS = {
+    "falabella": "Falabella",
+    "ripley": "Ripley",
+    "paris": "Paris",
+    "theline": "The Line",
+    "marathon": "Marathon",
+    "sodimac": "Sodimac",
+    "jumbo": "Jumbo",
+    "hites": "Hites",
+    "easy": "Easy",
+    "santaisabel": "Santa Isabel",
+    "abcdin": "ABCDIN",
+    "preunic": "Preunic",
+    "tricot": "Tricot",
+    "kitchencenter": "Kitchen Center",
+    "surprice": "Surprice",
+}
+
+
+def _money(value):
+    return f"${value:,.0f}".replace(",", ".")
+
+
+def _format_date(observed_at):
+    # observed_at viene como "YYYY-MM-DD HH:MM:SS" (datetime('now') de SQLite).
+    try:
+        return datetime.strptime(observed_at[:10], "%Y-%m-%d").strftime("%d/%m/%Y")
+    except (ValueError, TypeError):
+        return observed_at or ""
+
+
+def _format_alert(site_id, reason, product, price_type, new_price, reference_price, history=None):
+    site_label = SITE_LABELS.get(site_id, site_id.title())
+    discount_pct = round((1 - new_price / reference_price) * 100) if reference_price else 0
     seller = product.get("seller_name") or "—"
-    return (
-        f"⚠️ <b>Posible error de precio</b> ({reason})\n"
-        f"Sitio: {site_id}\n"
-        f"{product['display_name']}\n"
-        f"Vendedor: {seller}\n"
-        f"Tipo de precio: {price_type}\n"
-        f"Precio anterior/referencia: {reference_txt}\n"
-        f"Precio actual: {new_txt}\n"
-        f'<a href="{product["url"]}">Ver producto</a>'
-    )
+
+    lines = [
+        f"⚠️ <b>#{site_label}</b> Dscto. {discount_pct}%",
+        f"{product['display_name']}",
+        "",
+        f"{_money(reference_price)} → {_money(new_price)} ({discount_pct}%)",
+    ]
+
+    if history:
+        lines.append("")
+        lines.append("Historial 📊")
+        for price, observed_at in history:
+            lines.append(f"{_format_date(observed_at)} - {_money(price)}")
+
+    lines.append("")
+    lines.append(f"Vendedor: {seller}")
+    lines.append(f'<a href="{product["url"]}">Ver producto 👀</a>')
+
+    return "\n".join(lines)
 
 
 def _process_page(conn, site_id, site_module, term, page_data):
@@ -81,23 +122,25 @@ def _process_page(conn, site_id, site_module, term, page_data):
                 last_alerted = db.get_last_alert_price(conn, site_id, product["sku_id"], price_type)
                 if last_alerted != new_price:
                     db.insert_alert(conn, site_id, product["sku_id"], price_type, new_price, reference_price, badge_reason)
+                    dated_history = db.get_price_history_with_dates(conn, site_id, product["sku_id"], price_type)
                     send_alert(
-                        _format_alert(site_id, badge_reason, product, price_type, new_price, reference_price),
+                        _format_alert(site_id, badge_reason, product, price_type, new_price, reference_price, dated_history),
                         photo_url=product.get("media_url"),
                     )
                     alerts_in_page += 1
 
         # --- Detección histórica por tipo de precio ---
         for price_type, price in prices.items():
-            history = db.get_price_history(conn, site_id, product["sku_id"], price_type)
-            anomaly = detect_anomaly(price, history)
+            price_history = db.get_price_history(conn, site_id, product["sku_id"], price_type)
+            anomaly = detect_anomaly(price, price_history)
             if anomaly:
                 reason, reference = anomaly
                 last_alerted = db.get_last_alert_price(conn, site_id, product["sku_id"], price_type)
                 if last_alerted != price:
                     db.insert_alert(conn, site_id, product["sku_id"], price_type, price, reference, reason)
+                    dated_history = db.get_price_history_with_dates(conn, site_id, product["sku_id"], price_type)
                     send_alert(
-                        _format_alert(site_id, reason, product, price_type, price, reference),
+                        _format_alert(site_id, reason, product, price_type, price, reference, dated_history),
                         photo_url=product.get("media_url"),
                     )
                     alerts_in_page += 1

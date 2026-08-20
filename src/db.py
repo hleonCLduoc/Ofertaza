@@ -103,6 +103,19 @@ def get_price_history(conn, site, sku_id, price_type, limit=20):
     return [row["price"] for row in rows]
 
 
+def get_price_history_with_dates(conn, site, sku_id, price_type, limit=5):
+    rows = conn.execute(
+        """
+        SELECT price, observed_at FROM price_observations
+        WHERE site = ? AND sku_id = ? AND price_type = ?
+        ORDER BY observed_at DESC
+        LIMIT ?
+        """,
+        (site, sku_id, price_type, limit),
+    ).fetchall()
+    return [(row["price"], row["observed_at"]) for row in rows]
+
+
 def insert_observation(conn, site, sku_id, price_type, price, search_term):
     conn.execute(
         """

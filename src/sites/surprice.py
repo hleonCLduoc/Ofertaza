@@ -13,6 +13,16 @@ CATEGORIES = [
     "chaquetas",
     "polerones",
     "mochilas",
+    "camisas",
+    "poleras",
+    "pantalones",
+    "jeans",
+    "chalecos",
+    "trajes de bano",
+    "zapatos",
+    "shorts",
+    "carteras",
+    "bolsos",
 ]
 
 SEARCH_URL = "https://www.surprice.cl/catalogsearch/result/"

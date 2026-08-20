@@ -13,6 +13,16 @@ CATEGORIES = [
     "refrigerador",
     "horno",
     "cafetera",
+    "batidora",
+    "aspiradora",
+    "freidora de aire",
+    "hervidor",
+    "microondas",
+    "lavavajillas",
+    "ollas",
+    "sartenes",
+    "tostador",
+    "plancha",
 ]
 
 SEARCH_URL = "https://www.kitchencenter.cl/search"

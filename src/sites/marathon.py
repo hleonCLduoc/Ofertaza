@@ -12,6 +12,7 @@ CATEGORIES = [
     "poleron",
     "chaqueta",
     "mochila",
+    "jordan",
 ]
 
 SEARCH_URL = "https://www.marathon.cl/on/demandware.store/Sites-MarathonChile-Site/es_CL/Search-Show"

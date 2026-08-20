@@ -11,6 +11,18 @@ CATEGORIES = [
     "cecinas",
     "lacteos",
     "limpieza hogar",
+    "conservas",
+    "cereales",
+    "galletas",
+    "chocolates",
+    "snacks",
+    "pastas",
+    "salsas",
+    "congelados",
+    "helados",
+    "yogurt",
+    "vinos",
+    "cervezas",
 ]
 
 KEY = "key_JopvNXKS61kwGkBe"
