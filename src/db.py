@@ -49,7 +49,10 @@ CREATE TABLE IF NOT EXISTS alerts (
 
 @contextmanager
 def get_conn():
-    conn = sqlite3.connect(DB_PATH)
+    # timeout: si otra conexión (ej. el ciclo principal) tiene la base
+    # ocupada, espera hasta 10s en vez de fallar al toque con "database
+    # is locked" (útil para scripts sueltos corridos en paralelo).
+    conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
     try:
         yield conn
