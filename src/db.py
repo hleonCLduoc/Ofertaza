@@ -49,11 +49,16 @@ CREATE TABLE IF NOT EXISTS alerts (
 
 @contextmanager
 def get_conn():
-    # timeout: si otra conexión (ej. el ciclo principal) tiene la base
-    # ocupada, espera hasta 10s en vez de fallar al toque con "database
-    # is locked" (útil para scripts sueltos corridos en paralelo).
+    # timeout: si otra conexión tiene la base ocupada, espera hasta 10s en
+    # vez de fallar al toque con "database is locked".
     conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
+    # WAL: el ciclo principal mantiene una sola conexión abierta durante
+    # varios minutos (todo el ciclo es una transacción). En el modo por
+    # defecto eso bloquea a cualquier otra conexión, incluso solo para
+    # leer. WAL permite que lecturas de otras conexiones (ej. scripts
+    # sueltos) no esperen a que el ciclo termine de escribir.
+    conn.execute("PRAGMA journal_mode=WAL")
     try:
         yield conn
         conn.commit()
