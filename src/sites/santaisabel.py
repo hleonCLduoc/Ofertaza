@@ -28,4 +28,10 @@ def get_pagination(page_data):
 
 
 def iter_products(page_data):
-    yield from cio.iter_products(page_data, default_seller="Santa Isabel")
+    for product in cio.iter_products(page_data, default_seller="Santa Isabel"):
+        # La API devuelve las URLs con el dominio legado sisa.cl, que ya
+        # no sirve las páginas de producto (404). El sitio real es
+        # santaisabel.cl, mismo path.
+        if product["url"] and "sisa.cl" in product["url"]:
+            product["url"] = product["url"].replace("sisa.cl", "santaisabel.cl")
+        yield product
