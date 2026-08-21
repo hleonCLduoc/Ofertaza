@@ -70,23 +70,30 @@ def _format_alert(site_id, reason, product, price_type, new_price, reference_pri
     site_label = SITE_LABELS.get(site_id, site_id.title())
     discount_pct = round((1 - new_price / reference_price) * 100) if reference_price else 0
     seller = product.get("seller_name") or "—"
+    brand = product.get("brand")
 
     lines = [
-        f"⚠️ <b>#{site_label}</b> Dscto. {discount_pct}%",
-        f"{product['display_name']}",
+        f"🔥 <b>-{discount_pct}%</b> · {site_label}",
         "",
-        f"{_money(reference_price)} → {_money(new_price)} ({discount_pct}%)",
+        f"<b>{product['display_name']}</b>",
+    ]
+    if brand:
+        lines.append(f"Marca: {brand}")
+    lines += [
+        "",
+        f"<s>{_money(reference_price)}</s>",
+        f"<b>{_money(new_price)}</b>",
     ]
 
     if history:
         lines.append("")
-        lines.append("Historial 📊")
+        lines.append("📊 Historial:")
         for price, observed_at in history:
             lines.append(f"{_format_date(observed_at)} - {_money(price)}")
 
     lines.append("")
-    lines.append(f"Vendedor: {seller}")
-    lines.append(f'<a href="{product["url"]}">Ver producto 👀</a>')
+    lines.append(f"🏪 Vendedor: {seller}")
+    lines.append(f'👉 <a href="{product["url"]}">Ver oferta</a>')
 
     return "\n".join(lines)
 
